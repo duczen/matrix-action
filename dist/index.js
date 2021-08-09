@@ -6315,7 +6315,7 @@ try {
   };
 
   console.log(data);
-  sendMessage(server, room_id, token);
+  post(server, room_id, token);
 
 
 
