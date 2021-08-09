@@ -1,0 +1,15 @@
+name: 'Matrix Action'
+description: 'Post build status to matrix server'
+inputs:
+  server:
+    description: 'Matrix server'
+    required: true
+  room_id:
+    description: 'Matrix room id'
+    required: true
+  token:
+    description: 'Matrix access token'
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'
