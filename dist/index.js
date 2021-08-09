@@ -6324,7 +6324,7 @@ try {
 }
 
 
-async function post(server, room_id) {
+async function post(server, room_id, token) {
   const client = new http.HttpClient('matrix-action');
   const reqURL = `${server}/_matrix/client/r0/rooms/${room_id}/send/m.room.message?access_token=${token}`;
   await client.post(reqURL, JSON.stringify({formatted_body: '<span>test</span>', body: 'test', format: 'org.matrix.custom.html', msgtype: 'm.text'}));
