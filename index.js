@@ -10,12 +10,14 @@ try {
   const runId = process.env.GITHUB_RUN_ID;
   const runNumber = process.env.GITHUB_RUN_NUMBER;
   const githubServer = process.env.GITHUB_SERVER_URL;
+  const repo = process.env.GITHUB_REPOSITORY;
   const buildURL = `${githubServer}/${repo}/actions/runs/${runId}`;
   const workflow = process.env.GITHUB_WORKFLOW;
   const actor = process.env.GITHUB_ACTOR;
   const actorURL = `${githubServer}/${actor}`;
 
   data = {
+    repo,
     server,
     room_id,
     token,
