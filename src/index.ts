@@ -18,17 +18,17 @@ async function run(): Promise<void> {
     const actor = process.env.GITHUB_ACTOR;
     const actorURL = `${githubServer}/${actor}`;
 
-    core.debug(`server: ${server}`);
-    core.debug(`room_id: ${roomId}`);
-    core.debug(`token: ${token}`);
-    core.debug(`status: ${status}`);
-    core.debug(`runId: ${runId}`);
-    core.debug(`runNumber: ${runNumber}`);
-    core.debug(`githubServer: ${githubServer}`);
-    core.debug(`buildURL: ${buildURL}`);
-    core.debug(`workflow: ${workflow}`);
-    core.debug(`actor: ${actor}`);
-    core.debug(`actorURL: ${actorURL}`);
+    console.log(`server: ${server}`);
+    console.log(`room_id: ${roomId}`);
+    console.log(`token: ${token}`);
+    console.log(`status: ${status}`);
+    console.log(`runId: ${runId}`);
+    console.log(`runNumber: ${runNumber}`);
+    console.log(`githubServer: ${githubServer}`);
+    console.log(`buildURL: ${buildURL}`);
+    console.log(`workflow: ${workflow}`);
+    console.log(`actor: ${actor}`);
+    console.log(`actorURL: ${actorURL}`);
 
     //post(server, room_id, token);
 
