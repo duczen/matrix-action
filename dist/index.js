@@ -6275,35 +6275,6 @@ module.exports = require("zlib");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__nccwpck_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__nccwpck_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -6324,11 +6295,38 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
 "use strict";
+// ESM COMPAT FLAG
 __nccwpck_require__.r(__webpack_exports__);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(186);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __nccwpck_require__(438);
+;// CONCATENATED MODULE: ./src/util.ts
+function duration(since) {
+    if (!since) {
+        return '';
+    }
+    let time = new Date().getTime() - new Date(since).getTime();
+    const h = Math.floor(time / (1000 * 60 * 60));
+    time -= h * 1000 * 60 * 60;
+    const m = Math.floor(time / (1000 * 60));
+    time -= m * 1000 * 60;
+    const s = Math.floor(time / 1000);
+    let durationStr = '';
+    if (h > 0) {
+        durationStr += `${h} hour `;
+    }
+    if (m > 0) {
+        durationStr += `${m} min `;
+    }
+    if (s > 0) {
+        durationStr += `${s} sec`;
+    }
+    return durationStr;
+}
+
+;// CONCATENATED MODULE: ./src/index.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -6340,91 +6338,46 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 };
 
 
+
 //const github = require('@actions/github');
 //const http = require('@actions/http-client');
 function run() {
-    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const server = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('server');
-            const roomId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('room_id');
-            const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
-            const status = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('status');
-            const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token');
-            const runId = process.env.GITHUB_RUN_ID;
-            const runNumber = process.env.GITHUB_RUN_NUMBER;
-            const githubServer = process.env.GITHUB_SERVER_URL;
-            const repoName = process.env.GITHUB_REPOSITORY;
-            const buildURL = `${githubServer}/${repoName}/actions/runs/${runId}`;
-            const workflow = process.env.GITHUB_WORKFLOW;
-            const actor = process.env.GITHUB_ACTOR;
-            const actorURL = `${githubServer}/${actor}`;
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`status: ${status}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`runId: ${runId}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`runNumber: ${runNumber}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`githubServer: ${githubServer}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`repoName: ${repoName}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`buildURL: ${buildURL}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`workflow: ${workflow}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`actor: ${actor}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`actorURL: ${actorURL}`);
-            const { owner, repo } = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo;
-            const { sha: ref } = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context;
-            const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(githubToken);
-            console.log(owner, repo, ref);
+            const server = core.getInput('server');
+            const roomId = core.getInput('room_id');
+            const token = core.getInput('token');
+            const status = core.getInput('status');
+            const githubToken = core.getInput('github_token');
+            const { owner, repo } = github.context.repo;
+            const jobName = github.context.job;
+            const { sha: ref } = github.context;
+            const octokit = (0,github.getOctokit)(githubToken);
             const resp = yield octokit.rest.repos.getCommit({ owner, repo, ref });
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`resp.data.html_url: ${resp.data.html_url}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`resp.data.commit.message: ${resp.data.commit.message}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`resp.data.commit.author: ${resp.data.commit.author}`);
-            const author = resp.data.commit.author;
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`author.name: ${author === null || author === void 0 ? void 0 : author.name}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`author.email: ${author === null || author === void 0 ? void 0 : author.email}`);
             const resp2 = yield octokit.rest.actions.listJobsForWorkflowRun({
-                owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
-                repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
-                run_id: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.runId,
+                owner: owner,
+                repo: repo,
+                run_id: github.context.runId,
             });
-            const jobName = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.job;
             const currentJob = resp2 === null || resp2 === void 0 ? void 0 : resp2.data.jobs.find(job => job.name === jobName);
-            if (currentJob) {
-                let time = new Date().getTime() - new Date(currentJob.started_at).getTime();
-                const h = Math.floor(time / (1000 * 60 * 60));
-                time -= h * 1000 * 60 * 60;
-                const m = Math.floor(time / (1000 * 60));
-                time -= m * 1000 * 60;
-                const s = Math.floor(time / 1000);
-                let value = '';
-                if (h > 0) {
-                    value += `${h} hour `;
-                }
-                if (m > 0) {
-                    value += `${m} min `;
-                }
-                if (s > 0) {
-                    value += `${s} sec`;
-                }
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`value: ${value}`);
-                const jobId = currentJob.id;
-                const url = `<https://github.com/${owner}/${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo}/runs/${jobId}|${jobName}>`;
-                //post(server, room_id, token);
-                console.log(`url: ${url}`);
-                const sha = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.sha;
-                const url2 = `<https://github.com/${owner}/${repo}/commit/${sha}|${sha.slice(0, 8)}>`;
-                console.log(`url2: ${url2}`);
-                const url3 = `<https://github.com/${owner}/${repo}|${owner}/${repo}>`;
-                console.log(`url3: ${url3}`);
-                console.log(`context.event: ${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.eventName}`);
-                console.log(`context.ref: ${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.ref}`);
-                const sha1 = (_b = (_a = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.sha) !== null && _b !== void 0 ? _b : _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.sha;
-                const url4 = `<https://github.com/${owner}/${repo}/commit/${sha1}/checks|${_actions_github__WEBPACK_IMPORTED_MODULE_1__.context.workflow}>`;
-                console.log(`url4: ${url4}`);
-                const sha2 = (_d = (_c = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.head.sha) !== null && _d !== void 0 ? _d : _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.sha;
-                const url5 = `<https://github.com/${owner}/${repo}/commit/${sha2}/checks|action>`;
-                console.log(`url5: ${url5}`);
-            }
+            const jobId = currentJob === null || currentJob === void 0 ? void 0 : currentJob.id;
+            const startedAt = currentJob === null || currentJob === void 0 ? void 0 : currentJob.started_at;
+            core.debug(`status: ${status}`);
+            core.debug(`repo: ${owner}/${repo}`);
+            core.debug(`repo url: https://github.com/${owner}/${repo}`);
+            core.debug(`message: ${resp.data.commit.message}`);
+            core.debug(`commit ${ref.slice(0, 6)}`);
+            core.debug(`commit_url: ${resp.data.html_url}`);
+            core.debug(`actor: ${github.context.actor}`);
+            core.debug(`author_url: https://github.com/${github.context.actor}`);
+            core.debug(`job: ${jobName}`);
+            core.debug(`job_url: https://github.com/${owner}/${repo}/runs/${jobId}`);
+            core.debug(`duration: ${duration(startedAt)}`);
+            core.debug(`event: ${github.context.eventName}`);
+            core.debug(`ref: ${github.context.ref}`);
         }
         catch (error) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+            core.setFailed(error.message);
         }
     });
 }
