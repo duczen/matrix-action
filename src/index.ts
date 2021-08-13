@@ -10,6 +10,7 @@ async function run(): Promise<void> {
     const roomId = core.getInput('room_id');
     const token = core.getInput('token');
     const status = core.getInput('status');
+    const githubToken = core.getInput('github_token');
 
     const runId = process.env.GITHUB_RUN_ID;
     const runNumber = process.env.GITHUB_RUN_NUMBER;
@@ -32,7 +33,7 @@ async function run(): Promise<void> {
 
     const { owner, repo } = context.repo;
     const { sha: ref } = context;
-    const octokit = getOctokit(token);
+    const octokit = getOctokit(githubToken);
     const resp = await octokit.rest.repos.getCommit({owner, repo, ref});
 
     core.debug(`resp.data.html_url: ${resp.data.html_url}`);

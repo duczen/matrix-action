@@ -13,6 +13,9 @@ inputs:
   status:
     description: 'Github build status'
     required: true
+  github_token:
+    description: 'Github job token'
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'

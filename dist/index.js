@@ -6350,6 +6350,7 @@ function run() {
             const roomId = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('room_id');
             const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
             const status = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('status');
+            const githubToken = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github_token');
             const runId = process.env.GITHUB_RUN_ID;
             const runNumber = process.env.GITHUB_RUN_NUMBER;
             const githubServer = process.env.GITHUB_SERVER_URL;
@@ -6369,7 +6370,7 @@ function run() {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`actorURL: ${actorURL}`);
             const { owner, repo } = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo;
             const { sha: ref } = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context;
-            const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(token);
+            const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(githubToken);
             const resp = yield octokit.rest.repos.getCommit({ owner, repo, ref });
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`resp.data.html_url: ${resp.data.html_url}`);
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`resp.data.commit.message: ${resp.data.commit.message}`);
