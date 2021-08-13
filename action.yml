@@ -10,6 +10,9 @@ inputs:
   token:
     description: 'Matrix access token'
     required: true
+  status:
+    description: 'Github build status'
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'
