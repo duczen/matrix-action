@@ -6371,6 +6371,7 @@ function run() {
             const { owner, repo } = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo;
             const { sha: ref } = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context;
             const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(githubToken);
+            console.log(owner, repo, ref);
             const resp = yield octokit.rest.repos.getCommit({ owner, repo, ref });
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`resp.data.html_url: ${resp.data.html_url}`);
             _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`resp.data.commit.message: ${resp.data.commit.message}`);

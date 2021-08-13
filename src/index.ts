@@ -34,6 +34,7 @@ async function run(): Promise<void> {
     const { owner, repo } = context.repo;
     const { sha: ref } = context;
     const octokit = getOctokit(githubToken);
+    console.log(owner, repo, ref)
     const resp = await octokit.rest.repos.getCommit({owner, repo, ref});
 
     core.debug(`resp.data.html_url: ${resp.data.html_url}`);
