@@ -6303,6 +6303,16 @@ var core = __nccwpck_require__(186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(438);
 ;// CONCATENATED MODULE: ./src/util.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const http = __nccwpck_require__(925);
 function duration(since) {
     if (!since) {
         return '';
@@ -6325,9 +6335,23 @@ function duration(since) {
     }
     return durationStr;
 }
+function post(server, room_id, token, msg) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = {
+            formatted_body: `${msg}`,
+            body: '',
+            format: 'org.matrix.custom.html',
+            msgtype: 'm.text'
+        };
+        const client = new http.HttpClient('matrix-action');
+        const reqURL = `${server}/_matrix/client/r0/rooms/${room_id}/send/m.room.message?access_token=${token}`;
+        yield client.post(reqURL, JSON.stringify(data));
+        return;
+    });
+}
 
 ;// CONCATENATED MODULE: ./src/index.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -6339,10 +6363,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 
-//const github = require('@actions/github');
-//const http = require('@actions/http-client');
 function run() {
-    return __awaiter(this, void 0, void 0, function* () {
+    return src_awaiter(this, void 0, void 0, function* () {
         try {
             const server = core.getInput('server');
             const roomId = core.getInput('room_id');
@@ -6366,15 +6388,27 @@ function run() {
             core.debug(`repo: ${owner}/${repo}`);
             core.debug(`repo url: https://github.com/${owner}/${repo}`);
             core.debug(`message: ${resp.data.commit.message}`);
-            core.debug(`commit ${ref.slice(0, 6)}`);
+            core.debug(`commit: ${ref.slice(0, 8)}`);
             core.debug(`commit_url: ${resp.data.html_url}`);
             core.debug(`actor: ${github.context.actor}`);
-            core.debug(`author_url: https://github.com/${github.context.actor}`);
+            core.debug(`actor_url: https://github.com/${github.context.actor}`);
             core.debug(`job: ${jobName}`);
             core.debug(`job_url: https://github.com/${owner}/${repo}/runs/${jobId}`);
             core.debug(`duration: ${duration(startedAt)}`);
             core.debug(`event: ${github.context.eventName}`);
             core.debug(`ref: ${github.context.ref}`);
+            const msg = `
+    <b>status:</b> ${status}<br />
+    <b>repo:</b> <a href="https://github.com/${owner}/${repo}">${owner}/${repo}</a><br />
+    <b>message:</b> ${resp.data.commit.message}<br />
+    <b>commit:</b> <a href="${resp.data.html_url}">${ref.slice(0, 8)}</a><br />
+    <b>actor:</b> <a href="https://github.com/${github.context.actor}">${github.context.actor}</a><br />
+    <b>job:</b> <a href="https://github.com/${owner}/${repo}/runs/${jobId}">${jobName}</a><br />
+    <b>duration:</b> ${duration(startedAt)}<br />
+    <b>event:</b> ${github.context.eventName}<br />
+    <b>ref:</b> ${github.context.ref}<br />
+    `;
+            yield post(server, roomId, token, msg);
         }
         catch (error) {
             core.setFailed(error.message);
@@ -6382,12 +6416,6 @@ function run() {
     });
 }
 run();
-// async function post(server, room_id, token) {
-//   const client = new http.HttpClient('matrix-action');
-//   const reqURL = `${server}/_matrix/client/r0/rooms/${room_id}/send/m.room.message?access_token=${token}`;
-//   await client.post(reqURL, JSON.stringify({formatted_body: '<span>test</span>', body: 'test', format: 'org.matrix.custom.html', msgtype: 'm.text'}));
-//   return;
-// }
 
 })();
 

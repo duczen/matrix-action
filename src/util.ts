@@ -1,3 +1,4 @@
+const http = require('@actions/http-client');
 
 export function duration(since: string | undefined): string {
   if (!since) {
@@ -22,4 +23,17 @@ export function duration(since: string | undefined): string {
     durationStr += `${s} sec`;
   }
   return durationStr
+}
+
+export async function post(server: string, room_id: string, token: string, msg: string) {
+  const data = {
+    formatted_body: `${msg}`,
+    body: '',
+    format: 'org.matrix.custom.html',
+    msgtype: 'm.text'
+  }
+  const client = new http.HttpClient('matrix-action');
+  const reqURL = `${server}/_matrix/client/r0/rooms/${room_id}/send/m.room.message?access_token=${token}`;
+  await client.post(reqURL, JSON.stringify(data));
+  return;
 }

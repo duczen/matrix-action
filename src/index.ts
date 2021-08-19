@@ -1,9 +1,7 @@
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
-import { duration } from './util.ts'
+import { duration, post } from './util.ts'
 
-//const github = require('@actions/github');
-//const http = require('@actions/http-client');
 async function run(): Promise<void> {
   try {
     const server = core.getInput('server');
@@ -31,15 +29,29 @@ async function run(): Promise<void> {
     core.debug(`repo: ${owner}/${repo}`)
     core.debug(`repo url: https://github.com/${owner}/${repo}`)
     core.debug(`message: ${resp.data.commit.message}`)
-    core.debug(`commit ${ref.slice(0, 6)}`)
+    core.debug(`commit: ${ref.slice(0, 8)}`)
     core.debug(`commit_url: ${resp.data.html_url}`)
     core.debug(`actor: ${context.actor}`)
-    core.debug(`author_url: https://github.com/${context.actor}`)
+    core.debug(`actor_url: https://github.com/${context.actor}`)
     core.debug(`job: ${jobName}`)
     core.debug(`job_url: https://github.com/${owner}/${repo}/runs/${jobId}`)
     core.debug(`duration: ${duration(startedAt)}`)
     core.debug(`event: ${context.eventName}`)
     core.debug(`ref: ${context.ref}`)
+
+    const msg = `
+    <b>status:</b> ${status}<br />
+    <b>repo:</b> <a href="https://github.com/${owner}/${repo}">${owner}/${repo}</a><br />
+    <b>message:</b> ${resp.data.commit.message}<br />
+    <b>commit:</b> <a href="${resp.data.html_url}">${ref.slice(0, 8)}</a><br />
+    <b>actor:</b> <a href="https://github.com/${context.actor}">${context.actor}</a><br />
+    <b>job:</b> <a href="https://github.com/${owner}/${repo}/runs/${jobId}">${jobName}</a><br />
+    <b>duration:</b> ${duration(startedAt)}<br />
+    <b>event:</b> ${context.eventName}<br />
+    <b>ref:</b> ${context.ref}<br />
+    `;
+
+    await post(server, roomId, token, msg);
 
   } catch (error) {
     core.setFailed(error.message)
@@ -47,11 +59,3 @@ async function run(): Promise<void> {
 }
 
 run()
-
-
-// async function post(server, room_id, token) {
-//   const client = new http.HttpClient('matrix-action');
-//   const reqURL = `${server}/_matrix/client/r0/rooms/${room_id}/send/m.room.message?access_token=${token}`;
-//   await client.post(reqURL, JSON.stringify({formatted_body: '<span>test</span>', body: 'test', format: 'org.matrix.custom.html', msgtype: 'm.text'}));
-//   return;
-// }
