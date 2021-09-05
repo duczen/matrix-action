@@ -6438,7 +6438,7 @@ function run() {
     <b>event:</b> ${github.context.eventName}<br />
     <b>ref:</b> ${github.context.ref}<br />
     `;
-            const body = `${owner}/${repo}: ${status}`;
+            const body = `${owner}/${repo} - ${jobName}: ${status}`;
             yield post(server, roomId, token, body, bodyHTML);
         }
         catch (error) {

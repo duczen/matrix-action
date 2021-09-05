@@ -51,7 +51,7 @@ async function run(): Promise<void> {
     <b>ref:</b> ${context.ref}<br />
     `;
 
-    const body = `${owner}/${repo}: ${status}`;
+    const body = `${owner}/${repo} - ${jobName}: ${status}`;
 
     await post(server, roomId, token, body, bodyHTML);
 
