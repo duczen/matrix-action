@@ -25,10 +25,10 @@ export function duration(since: string | undefined): string {
   return durationStr
 }
 
-export async function post(server: string, room_id: string, token: string, msg: string) {
+export async function post(server: string, room_id: string, token: string, body: string, bodyHTML: string) {
   const data = {
-    formatted_body: `${msg}`,
-    body: '',
+    formatted_body: `${bodyHTML}`,
+    body: `${body}`,
     format: 'org.matrix.custom.html',
     msgtype: 'm.text'
   }

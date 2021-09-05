@@ -39,7 +39,7 @@ async function run(): Promise<void> {
     core.debug(`event: ${context.eventName}`)
     core.debug(`ref: ${context.ref}`)
 
-    const msg = `
+    const bodyHTML = `
     <b>status:</b> ${status}<br />
     <b>repo:</b> <a href="https://github.com/${owner}/${repo}">${owner}/${repo}</a><br />
     <b>message:</b> ${resp.data.commit.message}<br />
@@ -51,7 +51,9 @@ async function run(): Promise<void> {
     <b>ref:</b> ${context.ref}<br />
     `;
 
-    await post(server, roomId, token, msg);
+    const body = `${owner}/${repo}: ${status}`;
+
+    await post(server, roomId, token, body, bodyHTML);
 
   } catch (error) {
     core.setFailed(error.message)

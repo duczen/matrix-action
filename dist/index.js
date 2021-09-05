@@ -6365,11 +6365,11 @@ function duration(since) {
     }
     return durationStr;
 }
-function post(server, room_id, token, msg) {
+function post(server, room_id, token, body, bodyHTML) {
     return __awaiter(this, void 0, void 0, function* () {
         const data = {
-            formatted_body: `${msg}`,
-            body: '',
+            formatted_body: `${bodyHTML}`,
+            body: `${body}`,
             format: 'org.matrix.custom.html',
             msgtype: 'm.text'
         };
@@ -6427,7 +6427,7 @@ function run() {
             core.debug(`duration: ${duration(startedAt)}`);
             core.debug(`event: ${github.context.eventName}`);
             core.debug(`ref: ${github.context.ref}`);
-            const msg = `
+            const bodyHTML = `
     <b>status:</b> ${status}<br />
     <b>repo:</b> <a href="https://github.com/${owner}/${repo}">${owner}/${repo}</a><br />
     <b>message:</b> ${resp.data.commit.message}<br />
@@ -6438,7 +6438,8 @@ function run() {
     <b>event:</b> ${github.context.eventName}<br />
     <b>ref:</b> ${github.context.ref}<br />
     `;
-            yield post(server, roomId, token, msg);
+            const body = `${owner}/${repo}: ${status}`;
+            yield post(server, roomId, token, body, bodyHTML);
         }
         catch (error) {
             core.setFailed(error.message);
