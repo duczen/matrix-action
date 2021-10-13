@@ -134,12 +134,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
+exports.getIDToken = exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
 const command_1 = __nccwpck_require__(351);
 const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(278);
 const os = __importStar(__nccwpck_require__(87));
 const path = __importStar(__nccwpck_require__(622));
+const oidc_utils_1 = __nccwpck_require__(41);
 /**
  * The code to exit an action
  */
@@ -408,6 +409,12 @@ function getState(name) {
     return process.env[`STATE_${name}`] || '';
 }
 exports.getState = getState;
+function getIDToken(aud) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield oidc_utils_1.OidcClient.getIDToken(aud);
+    });
+}
+exports.getIDToken = getIDToken;
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -461,6 +468,90 @@ exports.issueCommand = issueCommand;
 
 /***/ }),
 
+/***/ 41:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.OidcClient = void 0;
+const http_client_1 = __nccwpck_require__(925);
+const auth_1 = __nccwpck_require__(702);
+const core_1 = __nccwpck_require__(186);
+class OidcClient {
+    static createHttpClient(allowRetry = true, maxRetry = 10) {
+        const requestOptions = {
+            allowRetries: allowRetry,
+            maxRetries: maxRetry
+        };
+        return new http_client_1.HttpClient('actions/oidc-client', [new auth_1.BearerCredentialHandler(OidcClient.getRequestToken())], requestOptions);
+    }
+    static getRequestToken() {
+        const token = process.env['ACTIONS_ID_TOKEN_REQUEST_TOKEN'];
+        if (!token) {
+            throw new Error('Unable to get ACTIONS_ID_TOKEN_REQUEST_TOKEN env variable');
+        }
+        return token;
+    }
+    static getIDTokenUrl() {
+        const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL'];
+        if (!runtimeUrl) {
+            throw new Error('Unable to get ACTIONS_ID_TOKEN_REQUEST_URL env variable');
+        }
+        return runtimeUrl;
+    }
+    static getCall(id_token_url) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const httpclient = OidcClient.createHttpClient();
+            const res = yield httpclient
+                .getJson(id_token_url)
+                .catch(error => {
+                throw new Error(`Failed to get ID Token. \n 
+        Error Code : ${error.statusCode}\n 
+        Error Message: ${error.result.message}`);
+            });
+            const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
+            if (!id_token) {
+                throw new Error('Response json body do not have ID Token field');
+            }
+            return id_token;
+        });
+    }
+    static getIDToken(audience) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // New ID Token is requested from action service
+                let id_token_url = OidcClient.getIDTokenUrl();
+                if (audience) {
+                    const encodedAudience = encodeURIComponent(audience);
+                    id_token_url = `${id_token_url}&audience=${encodedAudience}`;
+                }
+                core_1.debug(`ID token url is ${id_token_url}`);
+                const id_token = yield OidcClient.getCall(id_token_url);
+                core_1.setSecret(id_token);
+                return id_token;
+            }
+            catch (error) {
+                throw new Error(`Error message: ${error.message}`);
+            }
+        });
+    }
+}
+exports.OidcClient = OidcClient;
+//# sourceMappingURL=oidc-utils.js.map
+
+/***/ }),
+
 /***/ 278:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -496,6 +587,7 @@ function toCommandProperties(annotationProperties) {
     }
     return {
         title: annotationProperties.title,
+        file: annotationProperties.file,
         line: annotationProperties.startLine,
         endLine: annotationProperties.endLine,
         col: annotationProperties.startColumn,
@@ -719,6 +811,72 @@ function getOctokitOptions(token, options) {
 }
 exports.getOctokitOptions = getOctokitOptions;
 //# sourceMappingURL=utils.js.map
+
+/***/ }),
+
+/***/ 702:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+class BasicCredentialHandler {
+    constructor(username, password) {
+        this.username = username;
+        this.password = password;
+    }
+    prepareRequest(options) {
+        options.headers['Authorization'] =
+            'Basic ' +
+                Buffer.from(this.username + ':' + this.password).toString('base64');
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication(response) {
+        return false;
+    }
+    handleAuthentication(httpClient, requestInfo, objs) {
+        return null;
+    }
+}
+exports.BasicCredentialHandler = BasicCredentialHandler;
+class BearerCredentialHandler {
+    constructor(token) {
+        this.token = token;
+    }
+    // currently implements pre-authorization
+    // TODO: support preAuth = false where it hooks on 401
+    prepareRequest(options) {
+        options.headers['Authorization'] = 'Bearer ' + this.token;
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication(response) {
+        return false;
+    }
+    handleAuthentication(httpClient, requestInfo, objs) {
+        return null;
+    }
+}
+exports.BearerCredentialHandler = BearerCredentialHandler;
+class PersonalAccessTokenCredentialHandler {
+    constructor(token) {
+        this.token = token;
+    }
+    // currently implements pre-authorization
+    // TODO: support preAuth = false where it hooks on 401
+    prepareRequest(options) {
+        options.headers['Authorization'] =
+            'Basic ' + Buffer.from('PAT:' + this.token).toString('base64');
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication(response) {
+        return false;
+    }
+    handleAuthentication(httpClient, requestInfo, objs) {
+        return null;
+    }
+}
+exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHandler;
+
 
 /***/ }),
 
@@ -6160,6 +6318,160 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 144:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(186));
+const github_1 = __nccwpck_require__(438);
+const util_1 = __nccwpck_require__(629);
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const server = core.getInput('server');
+            const roomId = core.getInput('room_id');
+            const token = core.getInput('token');
+            const status = core.getInput('status');
+            const githubToken = core.getInput('github_token');
+            const { owner, repo } = github_1.context.repo;
+            const jobName = github_1.context.job;
+            const { sha: ref } = github_1.context;
+            const octokit = (0, github_1.getOctokit)(githubToken);
+            const resp = yield octokit.rest.repos.getCommit({ owner, repo, ref });
+            const resp2 = yield octokit.rest.actions.listJobsForWorkflowRun({
+                owner: owner,
+                repo: repo,
+                run_id: github_1.context.runId,
+            });
+            const currentJob = resp2 === null || resp2 === void 0 ? void 0 : resp2.data.jobs.find(job => job.name === jobName);
+            const jobId = currentJob === null || currentJob === void 0 ? void 0 : currentJob.id;
+            const startedAt = currentJob === null || currentJob === void 0 ? void 0 : currentJob.started_at;
+            core.debug(`status: ${status}`);
+            core.debug(`repo: ${owner}/${repo}`);
+            core.debug(`repo url: https://github.com/${owner}/${repo}`);
+            core.debug(`message: ${resp.data.commit.message}`);
+            core.debug(`commit: ${ref.slice(0, 8)}`);
+            core.debug(`commit_url: ${resp.data.html_url}`);
+            core.debug(`actor: ${github_1.context.actor}`);
+            core.debug(`actor_url: https://github.com/${github_1.context.actor}`);
+            core.debug(`job: ${jobName}`);
+            core.debug(`job_url: https://github.com/${owner}/${repo}/runs/${jobId}`);
+            core.debug(`duration: ${(0, util_1.duration)(startedAt)}`);
+            core.debug(`event: ${github_1.context.eventName}`);
+            core.debug(`ref: ${github_1.context.ref}`);
+            const bodyHTML = `
+    <b>status:</b> ${status}<br />
+    <b>repo:</b> <a href="https://github.com/${owner}/${repo}">${owner}/${repo}</a><br />
+    <b>message:</b> ${resp.data.commit.message}<br />
+    <b>commit:</b> <a href="${resp.data.html_url}">${ref.slice(0, 8)}</a><br />
+    <b>actor:</b> <a href="https://github.com/${github_1.context.actor}">${github_1.context.actor}</a><br />
+    <b>job:</b> <a href="https://github.com/${owner}/${repo}/runs/${jobId}">${jobName}</a><br />
+    <b>duration:</b> ${(0, util_1.duration)(startedAt)}<br />
+    <b>event:</b> ${github_1.context.eventName}<br />
+    <b>ref:</b> ${github_1.context.ref}<br />
+    `;
+            const body = `${owner}/${repo} - ${jobName}: ${status}`;
+            yield (0, util_1.post)(server, roomId, token, body, bodyHTML);
+        }
+        catch (e) {
+            core.setFailed(e.message);
+        }
+    });
+}
+run();
+
+
+/***/ }),
+
+/***/ 629:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.post = exports.duration = void 0;
+const http = __nccwpck_require__(925);
+function duration(since) {
+    if (!since) {
+        return '';
+    }
+    let time = new Date().getTime() - new Date(since).getTime();
+    const h = Math.floor(time / (1000 * 60 * 60));
+    time -= h * 1000 * 60 * 60;
+    const m = Math.floor(time / (1000 * 60));
+    time -= m * 1000 * 60;
+    const s = Math.floor(time / 1000);
+    let durationStr = '';
+    if (h > 0) {
+        durationStr += `${h} hour `;
+    }
+    if (m > 0) {
+        durationStr += `${m} min `;
+    }
+    if (s > 0) {
+        durationStr += `${s} sec`;
+    }
+    return durationStr;
+}
+exports.duration = duration;
+function post(server, room_id, token, body, bodyHTML) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = {
+            formatted_body: `${bodyHTML}`,
+            body: `${body}`,
+            format: 'org.matrix.custom.html',
+            msgtype: 'm.text'
+        };
+        const client = new http.HttpClient('matrix-action');
+        const reqURL = `${server}/_matrix/client/r0/rooms/${room_id}/send/m.room.message?access_token=${token}`;
+        yield client.post(reqURL, JSON.stringify(data));
+        return;
+    });
+}
+exports.post = post;
+
+
+/***/ }),
+
 /***/ 877:
 /***/ ((module) => {
 
@@ -6305,151 +6617,17 @@ module.exports = require("zlib");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__nccwpck_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
-(() => {
-"use strict";
-// ESM COMPAT FLAG
-__nccwpck_require__.r(__webpack_exports__);
-
-// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(186);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __nccwpck_require__(438);
-;// CONCATENATED MODULE: ./src/util.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const http = __nccwpck_require__(925);
-function duration(since) {
-    if (!since) {
-        return '';
-    }
-    let time = new Date().getTime() - new Date(since).getTime();
-    const h = Math.floor(time / (1000 * 60 * 60));
-    time -= h * 1000 * 60 * 60;
-    const m = Math.floor(time / (1000 * 60));
-    time -= m * 1000 * 60;
-    const s = Math.floor(time / 1000);
-    let durationStr = '';
-    if (h > 0) {
-        durationStr += `${h} hour `;
-    }
-    if (m > 0) {
-        durationStr += `${m} min `;
-    }
-    if (s > 0) {
-        durationStr += `${s} sec`;
-    }
-    return durationStr;
-}
-function post(server, room_id, token, body, bodyHTML) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const data = {
-            formatted_body: `${bodyHTML}`,
-            body: `${body}`,
-            format: 'org.matrix.custom.html',
-            msgtype: 'm.text'
-        };
-        const client = new http.HttpClient('matrix-action');
-        const reqURL = `${server}/_matrix/client/r0/rooms/${room_id}/send/m.room.message?access_token=${token}`;
-        yield client.post(reqURL, JSON.stringify(data));
-        return;
-    });
-}
-
-;// CONCATENATED MODULE: ./src/index.ts
-var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-
-function run() {
-    return src_awaiter(this, void 0, void 0, function* () {
-        try {
-            const server = core.getInput('server');
-            const roomId = core.getInput('room_id');
-            const token = core.getInput('token');
-            const status = core.getInput('status');
-            const githubToken = core.getInput('github_token');
-            const { owner, repo } = github.context.repo;
-            const jobName = github.context.job;
-            const { sha: ref } = github.context;
-            const octokit = (0,github.getOctokit)(githubToken);
-            const resp = yield octokit.rest.repos.getCommit({ owner, repo, ref });
-            const resp2 = yield octokit.rest.actions.listJobsForWorkflowRun({
-                owner: owner,
-                repo: repo,
-                run_id: github.context.runId,
-            });
-            const currentJob = resp2 === null || resp2 === void 0 ? void 0 : resp2.data.jobs.find(job => job.name === jobName);
-            const jobId = currentJob === null || currentJob === void 0 ? void 0 : currentJob.id;
-            const startedAt = currentJob === null || currentJob === void 0 ? void 0 : currentJob.started_at;
-            core.debug(`status: ${status}`);
-            core.debug(`repo: ${owner}/${repo}`);
-            core.debug(`repo url: https://github.com/${owner}/${repo}`);
-            core.debug(`message: ${resp.data.commit.message}`);
-            core.debug(`commit: ${ref.slice(0, 8)}`);
-            core.debug(`commit_url: ${resp.data.html_url}`);
-            core.debug(`actor: ${github.context.actor}`);
-            core.debug(`actor_url: https://github.com/${github.context.actor}`);
-            core.debug(`job: ${jobName}`);
-            core.debug(`job_url: https://github.com/${owner}/${repo}/runs/${jobId}`);
-            core.debug(`duration: ${duration(startedAt)}`);
-            core.debug(`event: ${github.context.eventName}`);
-            core.debug(`ref: ${github.context.ref}`);
-            const bodyHTML = `
-    <b>status:</b> ${status}<br />
-    <b>repo:</b> <a href="https://github.com/${owner}/${repo}">${owner}/${repo}</a><br />
-    <b>message:</b> ${resp.data.commit.message}<br />
-    <b>commit:</b> <a href="${resp.data.html_url}">${ref.slice(0, 8)}</a><br />
-    <b>actor:</b> <a href="https://github.com/${github.context.actor}">${github.context.actor}</a><br />
-    <b>job:</b> <a href="https://github.com/${owner}/${repo}/runs/${jobId}">${jobName}</a><br />
-    <b>duration:</b> ${duration(startedAt)}<br />
-    <b>event:</b> ${github.context.eventName}<br />
-    <b>ref:</b> ${github.context.ref}<br />
-    `;
-            const body = `${owner}/${repo} - ${jobName}: ${status}`;
-            yield post(server, roomId, token, body, bodyHTML);
-        }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
-}
-run();
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(144);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;

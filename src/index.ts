@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
-import { duration, post } from './util.ts'
+import { duration, post } from './util'
 
 async function run(): Promise<void> {
   try {
@@ -55,8 +55,8 @@ async function run(): Promise<void> {
 
     await post(server, roomId, token, body, bodyHTML);
 
-  } catch (error) {
-    core.setFailed(error.message)
+  } catch (e) {
+    core.setFailed((e as Error).message);
   }
 }
 
