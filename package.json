@@ -21,7 +21,7 @@
   "dependencies": {
     "@actions/core": "^1.6.0",
     "@actions/github": "^5.0.0",
-    "@types/node": "^16.10.4"
+    "@types/node": "^16.10.9"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
