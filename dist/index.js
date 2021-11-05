@@ -6351,14 +6351,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
 const github_1 = __nccwpck_require__(438);
-const marked_1 = __importDefault(__nccwpck_require__(17));
 const util_1 = __nccwpck_require__(629);
+const marked = __nccwpck_require__(17);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -6406,7 +6403,7 @@ function run() {
     **event**: ${github_1.context.eventName}
     **ref**: ${github_1.context.ref}
     `;
-            const bodyHTML = marked_1.default.parse(bodyMarkdown);
+            const bodyHTML = marked.parse(bodyMarkdown);
             const body = `${owner}/${repo} - ${jobName}: ${status}`;
             yield (0, util_1.post)(server, roomId, token, body, bodyHTML);
         }

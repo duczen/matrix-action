@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
-import marked from 'marked';
 import { duration, post } from './util'
+import marked = require('marked');
 
 async function run(): Promise<void> {
   try {
