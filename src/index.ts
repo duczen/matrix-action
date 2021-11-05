@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
-import { marked } from marked;
+import marked from 'marked';
 import { duration, post } from './util'
 
 async function run(): Promise<void> {
@@ -64,4 +64,3 @@ async function run(): Promise<void> {
 }
 
 run()
-python
