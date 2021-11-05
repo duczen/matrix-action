@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
+import { marked } from marked;
 import { duration, post } from './util'
 
 async function run(): Promise<void> {
@@ -39,18 +40,20 @@ async function run(): Promise<void> {
     core.debug(`event: ${context.eventName}`)
     core.debug(`ref: ${context.ref}`)
 
-    const bodyHTML = `
-    <b>status:</b> ${status}<br />
-    <b>repo:</b> <a href="https://github.com/${owner}/${repo}">${owner}/${repo}</a><br />
-    <b>message:</b> ${resp.data.commit.message}<br />
-    <b>commit:</b> <a href="${resp.data.html_url}">${ref.slice(0, 8)}</a><br />
-    <b>actor:</b> <a href="https://github.com/${context.actor}">${context.actor}</a><br />
-    <b>job:</b> <a href="https://github.com/${owner}/${repo}/runs/${jobId}">${jobName}</a><br />
-    <b>duration:</b> ${duration(startedAt)}<br />
-    <b>event:</b> ${context.eventName}<br />
-    <b>ref:</b> ${context.ref}<br />
-    `;
+    const bodyMarkdown = `
+    ## Action Complete
 
+    **status**: ${status}
+    **repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
+    **message**: ${resp.data.commit.message}
+    **commit**: [${ref.slice(0, 8)}](${resp.data.html_url})
+    **actor**: [${context.actor}](https://github.com/${context.actor})
+    **job**: [${jobName}](https://github.com/${owner}/${repo}/runs/${jobId})
+    **duration**: ${duration(startedAt)}
+    **event**: ${context.eventName}
+    **ref**: ${context.ref}
+    `;
+    const bodyHTML = marked.parse(bodyMarkdown);
     const body = `${owner}/${repo} - ${jobName}: ${status}`;
 
     await post(server, roomId, token, body, bodyHTML);
@@ -61,3 +64,4 @@ async function run(): Promise<void> {
 }
 
 run()
+python
