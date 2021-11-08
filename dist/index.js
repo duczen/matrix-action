@@ -6402,7 +6402,7 @@ function run() {
 **duration**: ${(0, util_1.duration)(startedAt)}
 **event**: ${github_1.context.eventName}
 **ref**: ${github_1.context.ref}`;
-            const bodyHTML = marked.parse(bodyMarkdown);
+            const bodyHTML = marked.parse(bodyMarkdown, { breaks: true });
             const body = `${owner}/${repo} - ${jobName}: ${status}`;
             yield (0, util_1.post)(server, roomId, token, body, bodyHTML);
         }
