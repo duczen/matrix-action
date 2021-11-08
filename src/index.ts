@@ -53,7 +53,7 @@ async function run(): Promise<void> {
 **event**: ${context.eventName}
 **ref**: ${context.ref}`;
 
-    const bodyHTML = marked.parse(bodyMarkdown);
+    const bodyHTML = marked.parse(bodyMarkdown, {breaks: true});
     const body = `${owner}/${repo} - ${jobName}: ${status}`;
 
     await post(server, roomId, token, body, bodyHTML);
