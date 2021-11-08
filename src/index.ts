@@ -41,18 +41,18 @@ async function run(): Promise<void> {
     core.debug(`ref: ${context.ref}`)
 
     const bodyMarkdown = `
-    ## Action Complete
+## Action Complete
 
-    **status**: ${status}
-    **repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
-    **message**: ${resp.data.commit.message}
-    **commit**: [${ref.slice(0, 8)}](${resp.data.html_url})
-    **actor**: [${context.actor}](https://github.com/${context.actor})
-    **job**: [${jobName}](https://github.com/${owner}/${repo}/runs/${jobId})
-    **duration**: ${duration(startedAt)}
-    **event**: ${context.eventName}
-    **ref**: ${context.ref}
-    `;
+**status**: ${status}
+**repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
+**message**: ${resp.data.commit.message}
+**commit**: [${ref.slice(0, 8)}](${resp.data.html_url})
+**actor**: [${context.actor}](https://github.com/${context.actor})
+**job**: [${jobName}](https://github.com/${owner}/${repo}/runs/${jobId})
+**duration**: ${duration(startedAt)}
+**event**: ${context.eventName}
+**ref**: ${context.ref}`;
+
     const bodyHTML = marked.parse(bodyMarkdown);
     const body = `${owner}/${repo} - ${jobName}: ${status}`;
 

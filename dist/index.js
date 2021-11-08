@@ -6391,18 +6391,17 @@ function run() {
             core.debug(`event: ${github_1.context.eventName}`);
             core.debug(`ref: ${github_1.context.ref}`);
             const bodyMarkdown = `
-    ## Action Complete
+## Action Complete
 
-    **status**: ${status}
-    **repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
-    **message**: ${resp.data.commit.message}
-    **commit**: [${ref.slice(0, 8)}](${resp.data.html_url})
-    **actor**: [${github_1.context.actor}](https://github.com/${github_1.context.actor})
-    **job**: [${jobName}](https://github.com/${owner}/${repo}/runs/${jobId})
-    **duration**: ${(0, util_1.duration)(startedAt)}
-    **event**: ${github_1.context.eventName}
-    **ref**: ${github_1.context.ref}
-    `;
+**status**: ${status}
+**repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
+**message**: ${resp.data.commit.message}
+**commit**: [${ref.slice(0, 8)}](${resp.data.html_url})
+**actor**: [${github_1.context.actor}](https://github.com/${github_1.context.actor})
+**job**: [${jobName}](https://github.com/${owner}/${repo}/runs/${jobId})
+**duration**: ${(0, util_1.duration)(startedAt)}
+**event**: ${github_1.context.eventName}
+**ref**: ${github_1.context.ref}`;
             const bodyHTML = marked.parse(bodyMarkdown);
             const body = `${owner}/${repo} - ${jobName}: ${status}`;
             yield (0, util_1.post)(server, roomId, token, body, bodyHTML);
