@@ -55,6 +55,8 @@ async function run(): Promise<void> {
 
     const bodyHTML = marked.parse(bodyMarkdown, {breaks: true});
     const body = `${owner}/${repo} - ${jobName}: ${status}`;
+    core.debug(bodyHTML);
+    core.debug(body);
 
     await post(server, roomId, token, body, bodyHTML);
 

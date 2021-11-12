@@ -6404,6 +6404,8 @@ function run() {
 **ref**: ${github_1.context.ref}`;
             const bodyHTML = marked.parse(bodyMarkdown, { breaks: true });
             const body = `${owner}/${repo} - ${jobName}: ${status}`;
+            core.debug(bodyHTML);
+            core.debug(body);
             yield (0, util_1.post)(server, roomId, token, body, bodyHTML);
         }
         catch (e) {
