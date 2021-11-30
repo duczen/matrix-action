@@ -21,7 +21,7 @@
   "dependencies": {
     "@actions/core": "^1.6.0",
     "@actions/github": "^5.0.0",
-    "@types/node": "^16.11.10",
+    "@types/node": "^16.11.11",
     "marked": "^4.0.5"
   },
   "devDependencies": {
