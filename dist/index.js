@@ -6595,7 +6595,7 @@ module.exports = require("zlib");
 "use strict";
 /**
  * marked - a markdown parser
- * Copyright (c) 2011-2021, Christopher Jeffrey. (MIT Licensed)
+ * Copyright (c) 2011-2022, Christopher Jeffrey. (MIT Licensed)
  * https://github.com/markedjs/marked
  */
 
@@ -6621,6 +6621,9 @@ function _defineProperties(target, props) {
 function _createClass(Constructor, protoProps, staticProps) {
   if (protoProps) _defineProperties(Constructor.prototype, protoProps);
   if (staticProps) _defineProperties(Constructor, staticProps);
+  Object.defineProperty(Constructor, "prototype", {
+    writable: false
+  });
   return Constructor;
 }
 
@@ -7027,16 +7030,10 @@ var Tokenizer = /*#__PURE__*/function () {
   _proto.space = function space(src) {
     var cap = this.rules.block.newline.exec(src);
 
-    if (cap) {
-      if (cap[0].length > 1) {
-        return {
-          type: 'space',
-          raw: cap[0]
-        };
-      }
-
+    if (cap && cap[0].length > 0) {
       return {
-        raw: '\n'
+        type: 'space',
+        raw: cap[0]
       };
     }
   };
@@ -7262,10 +7259,30 @@ var Tokenizer = /*#__PURE__*/function () {
       for (i = 0; i < l; i++) {
         this.lexer.state.top = false;
         list.items[i].tokens = this.lexer.blockTokens(list.items[i].text, []);
-
-        if (!list.loose && list.items[i].tokens.some(function (t) {
+        var spacers = list.items[i].tokens.filter(function (t) {
           return t.type === 'space';
-        })) {
+        });
+        var hasMultipleLineBreaks = spacers.every(function (t) {
+          var chars = t.raw.split('');
+          var lineBreaks = 0;
+
+          for (var _iterator = _createForOfIteratorHelperLoose(chars), _step; !(_step = _iterator()).done;) {
+            var _char = _step.value;
+
+            if (_char === '\n') {
+              lineBreaks += 1;
+            }
+
+            if (lineBreaks > 1) {
+              return true;
+            }
+          }
+
+          return false;
+        });
+
+        if (!list.loose && spacers.length && hasMultipleLineBreaks) {
+          // Having a single line break doesn't mean a list is loose. A single line break is terminating the last list item
           list.loose = true;
           list.items[i].loose = true;
         }
@@ -8090,7 +8107,11 @@ var Lexer = /*#__PURE__*/function () {
       if (token = this.tokenizer.space(src)) {
         src = src.substring(token.raw.length);
 
-        if (token.type) {
+        if (token.raw.length === 1 && tokens.length > 0) {
+          // if there's a single \n as a spacer, it's terminating the last line,
+          // so move it there so that we don't get unecessary paragraph tags
+          tokens[tokens.length - 1].raw += '\n';
+        } else {
           tokens.push(token);
         }
 
