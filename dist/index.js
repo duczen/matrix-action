@@ -6867,7 +6867,7 @@ function splitCells(tableRow, count) {
     cells.shift();
   }
 
-  if (!cells[cells.length - 1].trim()) {
+  if (cells.length > 0 && !cells[cells.length - 1].trim()) {
     cells.pop();
   }
 
@@ -7342,7 +7342,7 @@ var Tokenizer = /*#__PURE__*/function () {
           };
         }),
         align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
-        rows: cap[3] ? cap[3].replace(/\n[ \t]*$/, '').split('\n') : []
+        rows: cap[3] && cap[3].trim() ? cap[3].replace(/\n[ \t]*$/, '').split('\n') : []
       };
 
       if (item.header.length === item.align.length) {
