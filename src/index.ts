@@ -41,9 +41,7 @@ async function run(): Promise<void> {
     core.debug(`ref: ${context.ref}`)
 
     const bodyMarkdown = `
-## Action Complete
-
-**status**: ${status}
+## ${jobName} ${status}
 **repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
 **message**: ${resp.data.commit.message}
 **commit**: [${ref.slice(0, 8)}](${resp.data.html_url})

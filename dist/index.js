@@ -6391,9 +6391,7 @@ function run() {
             core.debug(`event: ${github_1.context.eventName}`);
             core.debug(`ref: ${github_1.context.ref}`);
             const bodyMarkdown = `
-## Action Complete
-
-**status**: ${status}
+## ${jobName} ${status}
 **repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
 **message**: ${resp.data.commit.message}
 **commit**: [${ref.slice(0, 8)}](${resp.data.html_url})
@@ -6867,7 +6865,7 @@ function splitCells(tableRow, count) {
     cells.shift();
   }
 
-  if (!cells[cells.length - 1].trim()) {
+  if (cells.length > 0 && !cells[cells.length - 1].trim()) {
     cells.pop();
   }
 
@@ -7342,7 +7340,7 @@ var Tokenizer = /*#__PURE__*/function () {
           };
         }),
         align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
-        rows: cap[3] ? cap[3].replace(/\n[ \t]*$/, '').split('\n') : []
+        rows: cap[3] && cap[3].trim() ? cap[3].replace(/\n[ \t]*$/, '').split('\n') : []
       };
 
       if (item.header.length === item.align.length) {
