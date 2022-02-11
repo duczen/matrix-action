@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { duration, post } from './util'
 import { marked } from 'marked';
+import { stringify } from 'querystring';
 
 async function run(): Promise<void> {
   try {
@@ -40,8 +41,9 @@ async function run(): Promise<void> {
     core.debug(`event: ${context.eventName}`)
     core.debug(`ref: ${context.ref}`)
 
+    const jobLabel = jobName.charAt(0).toUpperCase() + jobName.slice(1);
     const bodyMarkdown = `
-## ${jobName} ${status}
+#### ${jobLabel}: ${status}
 **repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
 **message**: ${resp.data.commit.message}
 **commit**: [${ref.slice(0, 8)}](${resp.data.html_url})
