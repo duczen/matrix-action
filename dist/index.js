@@ -6390,8 +6390,9 @@ function run() {
             core.debug(`duration: ${(0, util_1.duration)(startedAt)}`);
             core.debug(`event: ${github_1.context.eventName}`);
             core.debug(`ref: ${github_1.context.ref}`);
+            const jobLabel = jobName.charAt(0).toUpperCase() + jobName.slice(1);
             const bodyMarkdown = `
-## ${jobName} ${status}
+#### ${jobLabel}: ${status}
 **repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
 **message**: ${resp.data.commit.message}
 **commit**: [${ref.slice(0, 8)}](${resp.data.html_url})
