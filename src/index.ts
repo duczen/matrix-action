@@ -51,7 +51,8 @@ async function run(): Promise<void> {
 **job**: [${jobName}](https://github.com/${owner}/${repo}/runs/${jobId})
 **duration**: ${duration(startedAt)}
 **event**: ${context.eventName}
-**ref**: ${context.ref}`;
+**ref**: ${context.ref}
+`;
 
     const bodyHTML = marked.parse(bodyMarkdown, {breaks: true});
     const body = `${owner}/${repo} - ${jobName}: ${status}`;
