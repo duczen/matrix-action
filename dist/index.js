@@ -8718,6 +8718,10 @@ function escape(html, encode) {
   return html;
 }
 var unescapeTest = /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig;
+/**
+ * @param {string} html
+ */
+
 function unescape(html) {
   // explicitly match decimal, hex, and named HTML entities
   return html.replace(unescapeTest, function (_, n) {
@@ -8732,8 +8736,13 @@ function unescape(html) {
   });
 }
 var caret = /(^|[^\[])\^/g;
+/**
+ * @param {string | RegExp} regex
+ * @param {string} opt
+ */
+
 function edit(regex, opt) {
-  regex = regex.source || regex;
+  regex = typeof regex === 'string' ? regex : regex.source;
   opt = opt || '';
   var obj = {
     replace: function replace(name, val) {
@@ -8750,6 +8759,12 @@ function edit(regex, opt) {
 }
 var nonWordAndColonTest = /[^\w:]/g;
 var originIndependentUrl = /^$|^[a-z][a-z0-9+.-]*:|^[?#]/i;
+/**
+ * @param {boolean} sanitize
+ * @param {string} base
+ * @param {string} href
+ */
+
 function cleanUrl(sanitize, base, href) {
   if (sanitize) {
     var prot;
@@ -8781,6 +8796,11 @@ var baseUrls = {};
 var justDomain = /^[^:]+:\/*[^/]*$/;
 var protocol = /^([^:]+:)[\s\S]*$/;
 var domain = /^([^:]+:\/*[^/]*)[\s\S]*$/;
+/**
+ * @param {string} base
+ * @param {string} href
+ */
+
 function resolveUrl(base, href) {
   if (!baseUrls[' ' + base]) {
     // we can ignore everything in base after the last slash of its path component,
@@ -8877,9 +8897,15 @@ function splitCells(tableRow, count) {
   }
 
   return cells;
-} // Remove trailing 'c's. Equivalent to str.replace(/c*$/, '').
-// /c*$/ is vulnerable to REDOS.
-// invert: Remove suffix of non-c chars instead. Default falsey.
+}
+/**
+ * Remove trailing 'c's. Equivalent to str.replace(/c*$/, '').
+ * /c*$/ is vulnerable to REDOS.
+ *
+ * @param {string} str
+ * @param {string} c
+ * @param {boolean} invert Remove suffix of non-c chars instead. Default falsey.
+ */
 
 function rtrim(str, c, invert) {
   var l = str.length;
@@ -8903,7 +8929,7 @@ function rtrim(str, c, invert) {
     }
   }
 
-  return str.substr(0, l - suffLen);
+  return str.slice(0, l - suffLen);
 }
 function findClosingBracket(str, b) {
   if (str.indexOf(b[1]) === -1) {
@@ -8935,6 +8961,11 @@ function checkSanitizeDeprecation(opt) {
     console.warn('marked(): sanitize and sanitizer parameters are deprecated since version 0.7.0, should not be used and will be removed in the future. Read more here: https://marked.js.org/#/USING_ADVANCED.md#options');
   }
 } // copied from https://stackoverflow.com/a/5450113/806777
+
+/**
+ * @param {string} pattern
+ * @param {number} count
+ */
 
 function repeatString(pattern, count) {
   if (count < 1) {
@@ -9103,7 +9134,7 @@ var Tokenizer = /*#__PURE__*/function () {
     var cap = this.rules.block.blockquote.exec(src);
 
     if (cap) {
-      var text = cap[0].replace(/^ *> ?/gm, '');
+      var text = cap[0].replace(/^ *>[ \t]?/gm, '');
       return {
         type: 'blockquote',
         raw: cap[0],
@@ -9135,7 +9166,7 @@ var Tokenizer = /*#__PURE__*/function () {
       } // Get next list item
 
 
-      var itemRegex = new RegExp("^( {0,3}" + bull + ")((?: [^\\n]*)?(?:\\n|$))"); // Check if current bullet point can start a new List Item
+      var itemRegex = new RegExp("^( {0,3}" + bull + ")((?:[\t ][^\\n]*)?(?:\\n|$))"); // Check if current bullet point can start a new List Item
 
       while (src) {
         endEarly = false;
@@ -9772,10 +9803,10 @@ var block = {
   newline: /^(?: *(?:\n|$))+/,
   code: /^( {4}[^\n]+(?:\n(?: *(?:\n|$))*)?)+/,
   fences: /^ {0,3}(`{3,}(?=[^`\n]*\n)|~{3,})([^\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`]* *(?=\n|$)|$)/,
-  hr: /^ {0,3}((?:- *){3,}|(?:_ *){3,}|(?:\* *){3,})(?:\n+|$)/,
+  hr: /^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/,
   heading: /^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/,
   blockquote: /^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/,
-  list: /^( {0,3}bull)( [^\n]+?)?(?:\n|$)/,
+  list: /^( {0,3}bull)([ \t][^\n]+?)?(?:\n|$)/,
   html: '^ {0,3}(?:' // optional indentation
   + '<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)' // (1)
   + '|comment[^\\n]*(\\n+|$)' // (2)
@@ -9865,9 +9896,9 @@ var inline = {
   emStrong: {
     lDelim: /^(?:\*+(?:([punct_])|[^\s*]))|^_+(?:([punct*])|([^\s_]))/,
     //        (1) and (2) can only be a Right Delimiter. (3) and (4) can only be Left.  (5) and (6) can be either Left or Right.
-    //        () Skip orphan delim inside strong    (1) #***                (2) a***#, a***                   (3) #***a, ***a                 (4) ***#              (5) #***#                 (6) a***a
-    rDelimAst: /^[^_*]*?\_\_[^_*]*?\*[^_*]*?(?=\_\_)|[punct_](\*+)(?=[\s]|$)|[^punct*_\s](\*+)(?=[punct_\s]|$)|[punct_\s](\*+)(?=[^punct*_\s])|[\s](\*+)(?=[punct_])|[punct_](\*+)(?=[punct_])|[^punct*_\s](\*+)(?=[^punct*_\s])/,
-    rDelimUnd: /^[^_*]*?\*\*[^_*]*?\_[^_*]*?(?=\*\*)|[punct*](\_+)(?=[\s]|$)|[^punct*_\s](\_+)(?=[punct*\s]|$)|[punct*\s](\_+)(?=[^punct*_\s])|[\s](\_+)(?=[punct*])|[punct*](\_+)(?=[punct*])/ // ^- Not allowed for _
+    //          () Skip orphan inside strong  () Consume to delim (1) #***                (2) a***#, a***                   (3) #***a, ***a                 (4) ***#              (5) #***#                 (6) a***a
+    rDelimAst: /^[^_*]*?\_\_[^_*]*?\*[^_*]*?(?=\_\_)|[^*]+(?=[^*])|[punct_](\*+)(?=[\s]|$)|[^punct*_\s](\*+)(?=[punct_\s]|$)|[punct_\s](\*+)(?=[^punct*_\s])|[\s](\*+)(?=[punct_])|[punct_](\*+)(?=[punct_])|[^punct*_\s](\*+)(?=[^punct*_\s])/,
+    rDelimUnd: /^[^_*]*?\*\*[^_*]*?\_[^_*]*?(?=\*\*)|[^_]+(?=[^_])|[punct*](\_+)(?=[\s]|$)|[^punct*_\s](\_+)(?=[punct*\s]|$)|[punct*\s](\_+)(?=[^punct*_\s])|[\s](\_+)(?=[punct*])|[punct*](\_+)(?=[punct*])/ // ^- Not allowed for _
 
   },
   code: /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/,
@@ -9949,6 +9980,7 @@ inline.breaks = merge({}, inline.gfm, {
 
 /**
  * smartypants text replacement
+ * @param {string} text
  */
 
 function smartypants(text) {
@@ -9963,6 +9995,7 @@ function smartypants(text) {
 }
 /**
  * mangle email addresses
+ * @param {string} text
  */
 
 
@@ -10053,7 +10086,7 @@ var Lexer = /*#__PURE__*/function () {
   var _proto = Lexer.prototype;
 
   _proto.lex = function lex(src) {
-    src = src.replace(/\r\n|\r/g, '\n').replace(/\t/g, '    ');
+    src = src.replace(/\r\n|\r/g, '\n');
     this.blockTokens(src, this.tokens);
     var next;
 
@@ -10076,7 +10109,11 @@ var Lexer = /*#__PURE__*/function () {
     }
 
     if (this.options.pedantic) {
-      src = src.replace(/^ +$/gm, '');
+      src = src.replace(/\t/g, '    ').replace(/^ +$/gm, '');
+    } else {
+      src = src.replace(/^( *)(\t+)/gm, function (_, leading, tabs) {
+        return leading + '    '.repeat(tabs.length);
+      });
     }
 
     var token, lastToken, cutSrc, lastParagraphClipped;
@@ -10536,23 +10573,35 @@ var Renderer = /*#__PURE__*/function () {
     }
 
     return '<pre><code class="' + this.options.langPrefix + escape(lang, true) + '">' + (escaped ? _code : escape(_code, true)) + '</code></pre>\n';
-  };
+  }
+  /**
+   * @param {string} quote
+   */
+  ;
 
   _proto.blockquote = function blockquote(quote) {
-    return '<blockquote>\n' + quote + '</blockquote>\n';
+    return "<blockquote>\n" + quote + "</blockquote>\n";
   };
 
   _proto.html = function html(_html) {
     return _html;
-  };
+  }
+  /**
+   * @param {string} text
+   * @param {string} level
+   * @param {string} raw
+   * @param {any} slugger
+   */
+  ;
 
   _proto.heading = function heading(text, level, raw, slugger) {
     if (this.options.headerIds) {
-      return '<h' + level + ' id="' + this.options.headerPrefix + slugger.slug(raw) + '">' + text + '</h' + level + '>\n';
+      var id = this.options.headerPrefix + slugger.slug(raw);
+      return "<h" + level + " id=\"" + id + "\">" + text + "</h" + level + ">\n";
     } // ignore IDs
 
 
-    return '<h' + level + '>' + text + '</h' + level + '>\n';
+    return "<h" + level + ">" + text + "</h" + level + ">\n";
   };
 
   _proto.hr = function hr() {
@@ -10563,55 +10612,94 @@ var Renderer = /*#__PURE__*/function () {
     var type = ordered ? 'ol' : 'ul',
         startatt = ordered && start !== 1 ? ' start="' + start + '"' : '';
     return '<' + type + startatt + '>\n' + body + '</' + type + '>\n';
-  };
+  }
+  /**
+   * @param {string} text
+   */
+  ;
 
   _proto.listitem = function listitem(text) {
-    return '<li>' + text + '</li>\n';
+    return "<li>" + text + "</li>\n";
   };
 
   _proto.checkbox = function checkbox(checked) {
     return '<input ' + (checked ? 'checked="" ' : '') + 'disabled="" type="checkbox"' + (this.options.xhtml ? ' /' : '') + '> ';
-  };
+  }
+  /**
+   * @param {string} text
+   */
+  ;
 
   _proto.paragraph = function paragraph(text) {
-    return '<p>' + text + '</p>\n';
-  };
+    return "<p>" + text + "</p>\n";
+  }
+  /**
+   * @param {string} header
+   * @param {string} body
+   */
+  ;
 
   _proto.table = function table(header, body) {
-    if (body) body = '<tbody>' + body + '</tbody>';
+    if (body) body = "<tbody>" + body + "</tbody>";
     return '<table>\n' + '<thead>\n' + header + '</thead>\n' + body + '</table>\n';
-  };
+  }
+  /**
+   * @param {string} content
+   */
+  ;
 
   _proto.tablerow = function tablerow(content) {
-    return '<tr>\n' + content + '</tr>\n';
+    return "<tr>\n" + content + "</tr>\n";
   };
 
   _proto.tablecell = function tablecell(content, flags) {
     var type = flags.header ? 'th' : 'td';
-    var tag = flags.align ? '<' + type + ' align="' + flags.align + '">' : '<' + type + '>';
-    return tag + content + '</' + type + '>\n';
-  } // span level renderer
+    var tag = flags.align ? "<" + type + " align=\"" + flags.align + "\">" : "<" + type + ">";
+    return tag + content + ("</" + type + ">\n");
+  }
+  /**
+   * span level renderer
+   * @param {string} text
+   */
   ;
 
   _proto.strong = function strong(text) {
-    return '<strong>' + text + '</strong>';
-  };
+    return "<strong>" + text + "</strong>";
+  }
+  /**
+   * @param {string} text
+   */
+  ;
 
   _proto.em = function em(text) {
-    return '<em>' + text + '</em>';
-  };
+    return "<em>" + text + "</em>";
+  }
+  /**
+   * @param {string} text
+   */
+  ;
 
   _proto.codespan = function codespan(text) {
-    return '<code>' + text + '</code>';
+    return "<code>" + text + "</code>";
   };
 
   _proto.br = function br() {
     return this.options.xhtml ? '<br/>' : '<br>';
-  };
+  }
+  /**
+   * @param {string} text
+   */
+  ;
 
   _proto.del = function del(text) {
-    return '<del>' + text + '</del>';
-  };
+    return "<del>" + text + "</del>";
+  }
+  /**
+   * @param {string} href
+   * @param {string} title
+   * @param {string} text
+   */
+  ;
 
   _proto.link = function link(href, title, text) {
     href = cleanUrl(this.options.sanitize, this.options.baseUrl, href);
@@ -10628,7 +10716,13 @@ var Renderer = /*#__PURE__*/function () {
 
     out += '>' + text + '</a>';
     return out;
-  };
+  }
+  /**
+   * @param {string} href
+   * @param {string} title
+   * @param {string} text
+   */
+  ;
 
   _proto.image = function image(href, title, text) {
     href = cleanUrl(this.options.sanitize, this.options.baseUrl, href);
@@ -10637,10 +10731,10 @@ var Renderer = /*#__PURE__*/function () {
       return text;
     }
 
-    var out = '<img src="' + href + '" alt="' + text + '"';
+    var out = "<img src=\"" + href + "\" alt=\"" + text + "\"";
 
     if (title) {
-      out += ' title="' + title + '"';
+      out += " title=\"" + title + "\"";
     }
 
     out += this.options.xhtml ? '/>' : '>';
@@ -10710,6 +10804,10 @@ var Slugger = /*#__PURE__*/function () {
   function Slugger() {
     this.seen = {};
   }
+  /**
+   * @param {string} value
+   */
+
 
   var _proto = Slugger.prototype;
 
@@ -10720,6 +10818,8 @@ var Slugger = /*#__PURE__*/function () {
   }
   /**
    * Finds the next safe (unique) slug to use
+   * @param {string} originalSlug
+   * @param {boolean} isDryRun
    */
   ;
 
@@ -10745,8 +10845,9 @@ var Slugger = /*#__PURE__*/function () {
   }
   /**
    * Convert string to unique id
-   * @param {object} options
-   * @param {boolean} options.dryrun Generates the next unique slug without updating the internal accumulator.
+   * @param {object} [options]
+   * @param {boolean} [options.dryrun] Generates the next unique slug without
+   * updating the internal accumulator.
    */
   ;
 
@@ -11443,6 +11544,7 @@ marked.walkTokens = function (tokens, callback) {
 };
 /**
  * Parse Inline
+ * @param {string} src
  */
 
 
