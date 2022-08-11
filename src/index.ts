@@ -1,8 +1,7 @@
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
-import { duration, post } from './util'
+import { duration, post, format } from './util'
 import { marked } from 'marked';
-import { stringify } from 'querystring';
 
 async function run(): Promise<void> {
   try {
@@ -43,15 +42,15 @@ async function run(): Promise<void> {
 
     const jobLabel = jobName.charAt(0).toUpperCase() + jobName.slice(1);
     const bodyMarkdown = `
-#### ${jobLabel}: ${status}
+# ${jobLabel}: ${status}
 **repo**: [${owner}/${repo}](https://github.com/${owner}/${repo})
-**message**: ${resp.data.commit.message}
 **commit**: [${ref.slice(0, 8)}](${resp.data.html_url})
 **actor**: [${context.actor}](https://github.com/${context.actor})
 **job**: [${jobName}](https://github.com/${owner}/${repo}/runs/${jobId})
 **duration**: ${duration(startedAt)}
 **event**: ${context.eventName}
-**ref**: ${context.ref}`;
+**ref**: ${context.ref}
+**message**: ${format(resp.data.commit.message)}`;
 
     const bodyHTML = marked.parse(bodyMarkdown, {breaks: true});
     const body = `${owner}/${repo} - ${jobName}: ${status}`;

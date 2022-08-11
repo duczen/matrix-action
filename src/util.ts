@@ -37,3 +37,7 @@ export async function post(server: string, room_id: string, token: string, body:
   await client.post(reqURL, JSON.stringify(data));
   return;
 }
+
+export function format(msg: string): string {
+  return msg.replace('---','').replace('...','');
+}
