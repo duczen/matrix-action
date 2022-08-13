@@ -52,7 +52,7 @@ async function run(): Promise<void> {
 **ref**: ${context.ref}
 **message**: ${format(resp.data.commit.message)}`;
 
-    const bodyHTML = marked.parse(bodyMarkdown, {breaks: true});
+    const bodyHTML = `${marked.parse(bodyMarkdown, {breaks: true})}<br>`;
     const body = `${owner}/${repo} - ${jobName}: ${status}`;
     core.debug(bodyHTML);
     core.debug(body);

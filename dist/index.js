@@ -9504,7 +9504,7 @@ function run() {
 **event**: ${github_1.context.eventName}
 **ref**: ${github_1.context.ref}
 **message**: ${(0, util_1.format)(resp.data.commit.message)}`;
-            const bodyHTML = marked_1.marked.parse(bodyMarkdown, { breaks: true });
+            const bodyHTML = `${marked_1.marked.parse(bodyMarkdown, { breaks: true })}<br>`;
             const body = `${owner}/${repo} - ${jobName}: ${status}`;
             core.debug(bodyHTML);
             core.debug(body);
@@ -9576,7 +9576,9 @@ function post(server, room_id, token, body, bodyHTML) {
 }
 exports.post = post;
 function format(msg) {
-    return msg.replace('---', '').replace('...', '');
+    let msgClean = msg.replace('---', '');
+    msgClean = msgClean.replace('...', '');
+    return msgClean;
 }
 exports.format = format;
 
