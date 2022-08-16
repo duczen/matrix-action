@@ -39,7 +39,5 @@ export async function post(server: string, room_id: string, token: string, body:
 }
 
 export function format(msg: string): string {
-  let msgClean =  msg.replace('---','')
-  msgClean = msgClean.replace('...','');
-  return msgClean;
+  return msg.replace('---\n','').replace('...\n','');
 }
