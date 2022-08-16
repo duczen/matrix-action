@@ -9576,9 +9576,7 @@ function post(server, room_id, token, body, bodyHTML) {
 }
 exports.post = post;
 function format(msg) {
-    let msgClean = msg.replace('---', '');
-    msgClean = msgClean.replace('...', '');
-    return msgClean;
+    return msg.replace('---\n', '').replace('...\n', '');
 }
 exports.format = format;
 
